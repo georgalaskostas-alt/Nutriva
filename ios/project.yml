@@ -1,0 +1,18 @@
+name: Nutriva
+options:
+  bundleIdPrefix: com.nutriva
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+targets:
+  Nutriva:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Nutriva
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nutriva.personal
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1"
