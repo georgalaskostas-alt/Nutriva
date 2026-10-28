@@ -1,0 +1,10 @@
+.DS_Store
+*.xcuserstate
+xcuserdata/
+DerivedData/
+.build/
+.env
+.env.*
+!.env.example
+**/Secrets.swift
+**/GoogleService-Info.plist
