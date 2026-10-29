@@ -44,6 +44,7 @@ struct ContentView: View {
     @State private var calories = ""
     @State private var protein = ""
     @State private var estimate: NutritionEstimate?
+    @State private var mealItems: [NutritionEstimate] = []
 
     var body: some View {
         TabView {
@@ -57,19 +58,27 @@ struct ContentView: View {
                     }
                     Section("Log a meal") {
                         TextField("Food description", text: $foodName)
-                            .onChange(of: foodName) { _, _ in estimate = nil; calories = ""; protein = "" }
+                            .onChange(of: foodName) { _, _ in estimate = nil; mealItems = []; calories = ""; protein = "" }
                         Button("Υπολόγισε αυτόματα") {
-                            estimate = LocalNutritionDatabase.estimate(foodName)
+                            let result = LocalNutritionDatabase.estimateMeal(foodName)
+                            estimate = result?.total
+                            mealItems = result?.items ?? []
                             if let estimate {
                                 calories = String(estimate.calories)
                                 protein = String(estimate.protein)
                             }
                         }
                         if let estimate {
+                            ForEach(Array(mealItems.enumerated()), id: \.offset) { _, item in
+                                Text("\(item.name): \(item.calories) kcal · \(item.protein) g πρωτεΐνη")
+                                    .font(.subheadline)
+                            }
+                            Text("Σύνολο: \(estimate.calories) kcal · \(estimate.protein) g πρωτεΐνη")
+                                .fontWeight(.semibold)
                             Text("Υδατάνθρακες: \(estimate.carbohydrates.formatted()) g · Λιπαρά: \(estimate.fat.formatted()) g")
                             Text(estimate.note).font(.caption).foregroundStyle(.secondary)
                         } else if !foodName.isEmpty {
-                            Text("Για σύνθετα ή άγνωστα γεύματα χρειάζονται περισσότερα στοιχεία. Δοκίμασε π.χ. «200 γραμμάρια κοτόπουλο».")
+                            Text("Για σύνθετα ή άγνωστα γεύματα χρειάζονται περισσότερα στοιχεία. Γράψε κάθε συστατικό με ποσότητα, π.χ. «200 γραμμάρια κοτόπουλο, 150 γραμμάρια ρύζι, 100 γραμμάρια σαλάτα».")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                         TextField("Calories (kcal)", text: $calories)
@@ -82,7 +91,7 @@ struct ContentView: View {
                             let trimmed = foodName.trimmingCharacters(in: .whitespacesAndNewlines)
                             guard !trimmed.isEmpty else { return }
                             diary.add(name: trimmed, calories: kcal, protein: grams)
-                            foodName = ""; calories = ""; protein = ""; estimate = nil
+                            foodName = ""; calories = ""; protein = ""; estimate = nil; mealItems = []
                         }
                     }
                     Section("Food diary") {
