@@ -105,9 +105,7 @@ struct ContentView: View {
             .tabItem { Label("Plan", systemImage: "calendar") }
 
             NavigationStack {
-                ContentUnavailableView("Nutriva AI", systemImage: "brain",
-                    description: Text("Online AI meal analysis is coming in the next milestone."))
-                    .navigationTitle("AI Coach")
+                LocalCoachView(diary: diary)
             }
             .tabItem { Label("AI", systemImage: "sparkles") }
         }
