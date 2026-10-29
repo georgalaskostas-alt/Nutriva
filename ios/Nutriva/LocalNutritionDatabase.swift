@@ -31,8 +31,36 @@ enum LocalNutritionDatabase {
         .init(aliases: ["ρυζι", "rice"], kcal100: 130, protein100: 2.7, carbs100: 28.2, fat100: 0.3, fiber100: 0.4, defaultGrams: nil, servingDescription: "βρασμένο ρύζι"),
         .init(aliases: ["αυγο", "egg"], kcal100: 143, protein100: 12.6, carbs100: 0.7, fat100: 9.5, fiber100: 0, defaultGrams: 50, servingDescription: "ένα μεγάλο αυγό ~50 g χωρίς κέλυφος"),
         .init(aliases: ["γιαουρτι", "yogurt"], kcal100: 73, protein100: 10, carbs100: 3.9, fat100: 2, fiber100: 0, defaultGrams: nil, servingDescription: "ενδεικτικό στραγγιστό 2%, διαφέρει ανά μάρκα"),
+        .init(aliases: ["σαλατα", "salad"], kcal100: 25, protein100: 1.2, carbs100: 4.5, fat100: 0.3, fiber100: 1.8, defaultGrams: nil, servingDescription: "απλή σαλάτα χωρίς λάδι ή σος"),
+        .init(aliases: ["ελαιολαδο", "λαδι", "olive oil"], kcal100: 884, protein100: 0, carbs100: 0, fat100: 100, fiber100: 0, defaultGrams: nil, servingDescription: "ελαιόλαδο"),
         .init(aliases: ["βρωμη", "oats"], kcal100: 389, protein100: 16.9, carbs100: 66.3, fat100: 6.9, fiber100: 10.6, defaultGrams: nil, servingDescription: "ξηρή βρώμη")
     ]
+
+    static func estimateMeal(_ input: String) -> (items: [NutritionEstimate], total: NutritionEstimate)? {
+        let cleaned = normalize(input)
+        let segments = cleaned
+            .replacingOccurrences(of: #"\\s+και\\s+"#, with: ",", options: .regularExpression)
+            .split(separator: ",")
+            .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        guard !segments.isEmpty else { return nil }
+        var items: [NutritionEstimate] = []
+        for segment in segments {
+            guard let item = estimate(segment) else { return nil }
+            items.append(item)
+        }
+        let total = NutritionEstimate(
+            name: input,
+            grams: items.reduce(0) { $0 + $1.grams },
+            calories: items.reduce(0) { $0 + $1.calories },
+            protein: items.reduce(0) { $0 + $1.protein },
+            carbohydrates: items.reduce(0) { $0 + $1.carbohydrates },
+            fat: items.reduce(0) { $0 + $1.fat },
+            fiber: items.allSatisfy { $0.fiber != nil } ? items.reduce(0) { $0 + ($1.fiber ?? 0) } : nil,
+            note: items.map { $0.note }.joined(separator: "\\n")
+        )
+        return (items, total)
+    }
 
     static func normalize(_ input: String) -> String {
         input.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "el_GR")).lowercased()
