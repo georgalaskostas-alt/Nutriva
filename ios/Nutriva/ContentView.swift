@@ -43,6 +43,7 @@ struct ContentView: View {
     @State private var foodName = ""
     @State private var calories = ""
     @State private var protein = ""
+    @State private var estimate: NutritionEstimate?
 
     var body: some View {
         TabView {
@@ -56,6 +57,21 @@ struct ContentView: View {
                     }
                     Section("Log a meal") {
                         TextField("Food description", text: $foodName)
+                            .onChange(of: foodName) { _, _ in estimate = nil; calories = ""; protein = "" }
+                        Button("Υπολόγισε αυτόματα") {
+                            estimate = LocalNutritionDatabase.estimate(foodName)
+                            if let estimate {
+                                calories = String(estimate.calories)
+                                protein = String(estimate.protein)
+                            }
+                        }
+                        if let estimate {
+                            Text("Υδατάνθρακες: \(estimate.carbohydrates.formatted()) g · Λιπαρά: \(estimate.fat.formatted()) g")
+                            Text(estimate.note).font(.caption).foregroundStyle(.secondary)
+                        } else if !foodName.isEmpty {
+                            Text("Για σύνθετα ή άγνωστα γεύματα χρειάζονται περισσότερα στοιχεία. Δοκίμασε π.χ. «200 γραμμάρια κοτόπουλο».")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
                         TextField("Calories (kcal)", text: $calories)
                             .keyboardType(.numberPad)
                         TextField("Protein (g)", text: $protein)
@@ -66,7 +82,7 @@ struct ContentView: View {
                             let trimmed = foodName.trimmingCharacters(in: .whitespacesAndNewlines)
                             guard !trimmed.isEmpty else { return }
                             diary.add(name: trimmed, calories: kcal, protein: grams)
-                            foodName = ""; calories = ""; protein = ""
+                            foodName = ""; calories = ""; protein = ""; estimate = nil
                         }
                     }
                     Section("Food diary") {
