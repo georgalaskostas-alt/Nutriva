@@ -5,6 +5,7 @@ struct CoachReply {
     let suggestedFood: FoodEntry?
 }
 
+@MainActor
 enum LocalNutritionCoach {
     static func reply(to input: String, diary: FoodDiary) -> CoachReply {
         let query = input.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "el_GR")).lowercased()
