@@ -57,7 +57,7 @@ enum LocalNutritionDatabase {
             carbohydrates: items.reduce(0) { $0 + $1.carbohydrates },
             fat: items.reduce(0) { $0 + $1.fat },
             fiber: items.allSatisfy { $0.fiber != nil } ? items.reduce(0) { $0 + ($1.fiber ?? 0) } : nil,
-            note: items.map { $0.note }.joined(separator: "\\n")
+            note: items.map { $0.note }.joined(separator: "\n")
         )
         return (items, total)
     }
